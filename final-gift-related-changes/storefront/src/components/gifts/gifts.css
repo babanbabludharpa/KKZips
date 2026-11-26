@@ -1,0 +1,604 @@
+/* ★ FREE GIFTS — storefront widget styles (kg = kutumbkart gifts).
+ *
+ * Self-contained on purpose: plain CSS, one class prefix, no Tailwind /
+ * CoreUI / styled-components dependency, so it drops into any React
+ * storefront. Everything below is driven by the tenant theme that
+ * TenantProvider injects on <html> from theme_config — so the widget
+ * always matches the rest of the storefront:
+ *
+ *   --color-primary    ← Theme → Primary Color
+ *   --color-secondary  ← Theme → Dark/Secondary Color
+ *   --color-card / --color-bg / --color-border / --color-dark / --color-mid
+ *   --border-radius / --shadow
+ *
+ * Override per widget if you ever need to:
+ *
+ *   .kg-root { --kg-accent: #e11d48; }        ← force a brand colour
+ *   .kg-root { --kg-toast-offset: 72px; }     ← clear a sticky bottom nav
+ *   <div className="kg-root kg-dark">…</div>  ← dark surfaces
+ */
+
+.kg-root {
+  /* ── Brand ──────────────────────────────────────────────────────────
+     Bound to the tenant theme (not a private palette): the accent is the
+     tenant's PRIMARY colour and the strong/gradient stop is the tenant's
+     SECONDARY colour. This block used to read --brand-primary /
+     --brand-primary-dark, which nothing in the storefront ever defines,
+     so every tenant silently rendered the green fallback and the gift
+     widget never matched the rest of the site.
+     ─────────────────────────────────────────────────────────────────── */
+  --kg-accent: var(--color-primary, #16a34a);
+  --kg-accent-strong: var(--color-secondary, var(--color-primary, #15803d));
+  --kg-accent-soft: color-mix(in srgb, var(--kg-accent) 12%, var(--color-card, #ffffff));
+  --kg-accent-border: color-mix(in srgb, var(--kg-accent) 32%, var(--color-card, #ffffff));
+
+  /* ── Surfaces / text — same tokens the rest of the storefront uses ── */
+  --kg-bg: var(--color-card, #ffffff);
+  --kg-surface: var(--color-bg, #f9fafb);
+  --kg-border: var(--color-border, #e5e7eb);
+  --kg-text: var(--color-dark, #111827);
+  --kg-text-muted: var(--color-mid, #6b7280);
+  --kg-track: color-mix(in srgb, var(--color-border, #e5e7eb) 60%, var(--color-bg, #f9fafb));
+
+  /* ── Shape — follows Theme → Border Radius / Shadow Style ────────── */
+  --kg-radius: var(--border-radius, 12px);
+  --kg-shadow: var(--shadow, 0 8px 24px rgba(17, 24, 39, 0.14));
+  --kg-toast-offset: 0px;
+
+  color: var(--kg-text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.kg-root.kg-dark {
+  --kg-accent-soft: color-mix(in srgb, var(--kg-accent) 22%, #111827);
+  --kg-accent-border: color-mix(in srgb, var(--kg-accent) 45%, #111827);
+  --kg-bg: #1f2937;
+  --kg-surface: #111827;
+  --kg-border: #374151;
+  --kg-text: #f9fafb;
+  --kg-text-muted: #9ca3af;
+  --kg-track: #374151;
+  --kg-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   1. FreeGiftBar — the animated progress bar
+   ════════════════════════════════════════════════════════════════ */
+
+.kg-bar {
+  background: var(--kg-bg);
+  border: 1px solid var(--kg-accent-border);
+  border-radius: var(--kg-radius);
+  padding: 12px 14px 10px;
+  margin: 10px 0;
+}
+
+.kg-bar-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.kg-bar-badge {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--kg-accent-soft);
+  color: var(--kg-accent);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.kg-bar[data-state='earned'] .kg-bar-badge,
+.kg-bar[data-state='complete'] .kg-bar-badge {
+  background: var(--kg-accent);
+  color: #fff;
+  animation: kg-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kg-bar-title {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.kg-bar-sub {
+  color: var(--kg-text-muted);
+  font-size: 12px;
+  margin-top: 1px;
+}
+
+.kg-bar-note {
+  color: var(--kg-text-muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+/* progress track */
+.kg-track {
+  position: relative;
+  height: 10px;
+  margin: 14px 4px 20px;
+  background: var(--kg-track);
+  border-radius: 999px;
+  overflow: visible;
+}
+
+.kg-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--kg-accent), var(--kg-accent-strong));
+  overflow: hidden;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kg-bar[data-state='earned'] .kg-fill,
+.kg-bar[data-state='complete'] .kg-fill {
+  animation: kg-glow 2.4s ease-in-out infinite;
+}
+
+.kg-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  animation: kg-shimmer 1.8s linear infinite;
+}
+
+/* tier markers */
+.kg-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kg-marker-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--kg-bg);
+  border: 2px solid var(--kg-border);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.kg-marker-dot svg {
+  width: 8px;
+  height: 8px;
+  opacity: 0;
+}
+
+.kg-marker[data-earned='true'] .kg-marker-dot {
+  background: var(--kg-accent);
+  border-color: var(--kg-accent);
+  animation: kg-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kg-marker[data-earned='true'] .kg-marker-dot svg {
+  opacity: 1;
+}
+
+.kg-marker-label {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--kg-text-muted);
+  white-space: nowrap;
+}
+
+.kg-marker[data-earned='true'] .kg-marker-label {
+  color: var(--kg-accent);
+}
+
+/* gift chips (earned + next-tier teaser) */
+.kg-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.kg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--kg-border);
+  background: var(--kg-surface);
+  font-size: 12px;
+  max-width: 100%;
+}
+
+.kg-chip img,
+.kg-chip .kg-chip-ph {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.kg-chip-ph {
+  display: grid;
+  place-items: center;
+  background: var(--kg-accent-soft);
+  color: var(--kg-accent);
+}
+
+.kg-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kg-chip-qty {
+  color: var(--kg-text-muted);
+}
+
+.kg-chip--earned {
+  border-color: var(--kg-accent-border);
+  background: var(--kg-accent-soft);
+}
+
+.kg-chip--locked {
+  color: var(--kg-text-muted);
+}
+
+.kg-chip--locked .kg-chip-ph {
+  background: var(--kg-track);
+  color: var(--kg-text-muted);
+}
+
+.kg-chip--locked img {
+  filter: grayscale(0.6) opacity(0.7);
+}
+
+.kg-chip-lock {
+  display: inline-grid;
+  place-items: center;
+  color: var(--kg-text-muted);
+}
+
+.kg-chip-check {
+  display: inline-grid;
+  place-items: center;
+  color: var(--kg-accent);
+}
+
+/* skeleton while loading */
+.kg-bar--loading .kg-track {
+  overflow: hidden;
+}
+
+.kg-skel {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--kg-track) 25%, var(--kg-surface) 50%, var(--kg-track) 75%);
+  background-size: 200% 100%;
+  animation: kg-skel 1.2s linear infinite;
+}
+
+/* dimmed when caps block gifts (checkout preview) */
+.kg-bar--ineligible {
+  opacity: 0.65;
+  filter: saturate(0.4);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   2. CartGiftLines — locked gift rows in the cart / checkout
+   ════════════════════════════════════════════════════════════════ */
+
+.kg-lines {
+  margin: 10px 0;
+}
+
+.kg-lines-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--kg-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.kg-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px dashed var(--kg-accent-border);
+  border-radius: 10px;
+  background: var(--kg-accent-soft);
+  margin-bottom: 6px;
+  animation: kg-slide-in 0.35s ease both;
+}
+
+.kg-line-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--kg-bg);
+  flex: 0 0 auto;
+}
+
+.kg-line-ph {
+  display: grid;
+  place-items: center;
+  color: var(--kg-accent);
+  background: var(--kg-bg);
+}
+
+.kg-line-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kg-line-name {
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kg-line-meta {
+  color: var(--kg-text-muted);
+  font-size: 12px;
+}
+
+.kg-line-right {
+  flex: 0 0 auto;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.kg-line-mrp {
+  color: var(--kg-text-muted);
+  text-decoration: line-through;
+  font-size: 12px;
+}
+
+.kg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--kg-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.kg-line--unavailable {
+  border-style: solid;
+  border-color: var(--kg-border);
+  background: var(--kg-surface);
+  opacity: 0.75;
+}
+
+.kg-line--unavailable .kg-line-img {
+  filter: grayscale(1) opacity(0.6);
+}
+
+.kg-line-na {
+  color: var(--kg-text-muted);
+  font-size: 11.5px;
+  font-style: italic;
+}
+
+.kg-lines-note {
+  color: var(--kg-text-muted);
+  font-size: 11.5px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.kg-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--kg-surface);
+  border: 1px solid var(--kg-border);
+  color: var(--kg-text-muted);
+  font-size: 12.5px;
+  margin-bottom: 6px;
+}
+
+/* order history / order detail reuse */
+.kg-order-free {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--kg-accent);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   3. GiftToast — "free gift unlocked" celebration
+   ════════════════════════════════════════════════════════════════ */
+
+.kg-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + var(--kg-toast-offset));
+  transform: translateX(-50%);
+  z-index: 1080;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 14px 16px;
+  background: var(--kg-bg);
+  border: 1px solid var(--kg-accent-border);
+  border-radius: 14px;
+  box-shadow: var(--kg-shadow);
+  animation: kg-toast-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  overflow: hidden;
+}
+
+.kg-toast-icon {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--kg-accent);
+  color: #fff;
+  animation: kg-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kg-toast-spark {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  color: var(--kg-accent);
+  background: var(--kg-bg);
+  border-radius: 50%;
+  padding: 2px;
+  animation: kg-spark 1.6s ease-in-out infinite;
+}
+
+.kg-toast-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kg-toast-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.kg-toast-items {
+  color: var(--kg-text-muted);
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kg-toast-sub {
+  color: var(--kg-accent);
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.kg-toast-x {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--kg-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+}
+
+.kg-toast-x:hover {
+  background: var(--kg-surface);
+  color: var(--kg-text);
+}
+
+.kg-toast-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--kg-accent);
+  transform-origin: left;
+  animation: kg-timer linear forwards;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   keyframes
+   ════════════════════════════════════════════════════════════════ */
+
+@keyframes kg-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+@keyframes kg-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--kg-accent) 45%, transparent); }
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--kg-accent) 0%, transparent); }
+}
+
+@keyframes kg-pop {
+  0% { transform: scale(0.6); }
+  70% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes kg-slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes kg-toast-in {
+  from { opacity: 0; transform: translate(-50%, 18px) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@keyframes kg-timer {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@keyframes kg-spark {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.25) rotate(18deg); }
+}
+
+@keyframes kg-skel {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* accessibility: calm everything down */
+@media (prefers-reduced-motion: reduce) {
+  .kg-shimmer,
+  .kg-spark,
+  .kg-glow,
+  .kg-skel {
+    animation: none;
+  }
+  .kg-fill {
+    transition: width 0.15s linear;
+  }
+}
