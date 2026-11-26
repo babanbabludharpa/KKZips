@@ -217,12 +217,30 @@ const OrderDetail = () => {
                                     server, never added by the customer. Mark
                                     them so nobody reads it as a bad price. */}
                                 {(item.is_gift === true || item.is_gift === 1 || item.is_gift === '1') && (
-                                  <CBadge color="success" shape="rounded-pill" className="ms-2">FREE GIFT</CBadge>
+                                  <span
+                                    className="ms-2"
+                                    style={{
+                                      display: 'inline-block',
+                                      padding: '1px 8px',
+                                      borderRadius: 999,
+                                      fontSize: '0.66rem',
+                                      fontWeight: 800,
+                                      letterSpacing: '0.02em',
+                                      // Admin theme tokens — same accent the
+                                      // rest of the panel uses, not CoreUI's
+                                      // fixed green.
+                                      background: 'var(--accent-subtle)',
+                                      color: 'var(--accent-dark)',
+                                      border: '1px solid var(--accent-glow)',
+                                    }}
+                                  >
+                                    FREE GIFT
+                                  </span>
                                 )}
                               </CTableDataCell>
                               <CTableDataCell className="text-end">
                                 {(item.is_gift === true || item.is_gift === 1 || item.is_gift === '1') ? (
-                                  <CBadge color="success">FREE</CBadge>
+                                  <strong style={{ color: 'var(--accent-dark)' }}>FREE</strong>
                                 ) : (
                                   <strong>₹{item.line_total}</strong>
                                 )}

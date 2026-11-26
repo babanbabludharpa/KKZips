@@ -274,7 +274,7 @@ export default function OrderDetail() {
                       <div style={{ fontWeight: 700, color: theme.dark, fontSize: "0.95rem", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                         {item.variant?.product?.name || `Variant #${item.product_variant_id}`}
                         {isGift && (
-                          <span style={{ background: "#ECFDF5", color: "#047857", border: "1px solid #A7F3D0", borderRadius: 999, padding: "1px 8px", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.02em" }}>
+                          <span style={{ background: "color-mix(in srgb, var(--color-primary, #047857) 12%, var(--color-card, #fff))", color: "var(--color-primary, #047857)", border: "1px solid color-mix(in srgb, var(--color-primary, #047857) 32%, var(--color-card, #fff))", borderRadius: 999, padding: "1px 8px", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.02em" }}>
                             FREE GIFT
                           </span>
                         )}
@@ -285,7 +285,7 @@ export default function OrderDetail() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ fontWeight: 800, color: isGift ? "#047857" : theme.dark }}>
+                  <div style={{ fontWeight: 800, color: isGift ? "var(--color-primary, #047857)" : theme.dark }}>
                     {isGift ? "FREE" : fmtMoney(item.line_total)}
                   </div>
                 </div>

@@ -703,9 +703,21 @@ const FreeGifts = () => {
                                 so this gift was never handed over and no longer
                                 counts towards any cap. */}
                             {u.released_at && (
-                              <CBadge color="secondary" className="mt-1" title={`Released ${fmtDateTime(u.released_at)}`}>
+                              <span
+                                className="d-inline-block mt-1"
+                                title={`Released ${fmtDateTime(u.released_at)}`}
+                                style={{
+                                  padding: '1px 8px',
+                                  borderRadius: 999,
+                                  fontSize: '0.66rem',
+                                  fontWeight: 700,
+                                  background: 'var(--bg-inset)',
+                                  color: 'var(--text-muted)',
+                                  border: '1px solid var(--border-strong)',
+                                }}
+                              >
                                 released
-                              </CBadge>
+                              </span>
                             )}
                           </CTableDataCell>
                           <CTableDataCell>
